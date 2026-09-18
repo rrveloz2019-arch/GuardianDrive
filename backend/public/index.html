@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GuardianDrive Setup Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --card: #1a2233;
+    --accent: #4f8cff;
+    --accent-dark: #3a6fd6;
+    --text: #e8ecf5;
+    --muted: #8b95ab;
+    --success: #3ecf8e;
+    --error: #ff5c5c;
+    --border: #2a3550;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 24px;
+    max-width: 720px;
+    margin-inline: auto;
+  }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 14px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .tab {
+    padding: 10px 16px;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; margin-top: 14px; }
+  label:first-child { margin-top: 0; }
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    background: #0f1420;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 14px;
+  }
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+  }
+  button:hover { background: var(--accent-dark); }
+  button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .status { margin-top: 12px; padding: 10px 12px; border-radius: 6px; font-size: 13px; display: none; }
+  .status.success { display: block; background: rgba(62,207,142,0.12); color: var(--success); border: 1px solid rgba(62,207,142,0.3); }
+  .status.error { display: block; background: rgba(255,92,92,0.12); color: var(--error); border: 1px solid rgba(255,92,92,0.3); }
+  .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 10px; }
+  .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s; }
+  .phrase-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 12px; background: #0f1420; border: 1px solid var(--border);
+    border-radius: 6px; margin-top: 8px; font-size: 13px;
+  }
+  .phrase-item button { margin: 0; padding: 4px 10px; font-size: 12px; background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .phrase-item.recorded { border-color: var(--success); }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--border); color: var(--muted); }
+  .badge.free { background: rgba(62,207,142,0.15); color: var(--success); }
+  .badge.paid { background: rgba(79,140,255,0.15); color: var(--accent); }
+  .mapping-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .mapping-row:last-child { border-bottom: none; }
+  .mapping-phrase { font-weight: 600; }
+  .mapping-target { color: var(--muted); font-size: 12px; }
+  .small-btn { padding: 4px 10px; font-size: 12px; margin: 0; background: transparent; border: 1px solid var(--error); color: var(--error); }
+</style>
+</head>
+<body>
+  <h1>GuardianDrive Setup Dashboard</h1>
+  <div class="subtitle">Personalize your hands-free AI secretary</div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="identity">1. Identity</div>
+    <div class="tab" data-tab="voice">2. Voice Training</div>
+    <div class="tab" data-tab="commands">3. Command Mapping</div>
+  </div>
+
+  <!-- PART 1: IDENTITY -->
+  <div class="panel active" id="panel-identity">
+    <div class="card">
+      <label>Assistant Name</label>
+      <input id="assistantName" placeholder="e.g. Juanita" />
+      <label>Wake Phrase</label>
+      <input id="wakePhrase" placeholder="e.g. Hey Juanita" />
+      <button onclick="saveIdentity()">Save Identity</button>
+      <div class="status" id="identity-status"></div>
+    </div>
+  </div>
+
+  <!-- PART 2: VOICE PROFILE -->
+  <div class="panel" id="panel-voice">
+    <div class="card">
+      <div id="voice-progress-label">Loading...</div>
+      <div class="progress-bar"><div class="progress-fill" id="voice-progress-fill" style="width:0%"></div></div>
+      <div id="voice-phrases"></div>
+      <button class="secondary" onclick="resetVoiceProfile()" style="margin-top:16px;">Reset Training</button>
+    </div>
+  </div>
+
+  <!-- PART 3: COMMAND MAPPING -->
+  <div class="panel" id="panel-commands">
+    <div class="card">
+      <label>Trigger Phrase</label>
+      <input id="triggerPhrase" placeholder='e.g. "find a coffee shop"' />
+      <label>Capability</label>
+      <select id="capabilitySelect" onchange="populateActions()"></select>
+      <label>Action</label>
+      <select id="actionSelect"></select>
+      <button onclick="addMapping()">Add Command</button>
+      <div class="status" id="commands-status"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">Current Commands</div>
+      <div id="mappings-list"></div>
+    </div>
+  </div>
+
+<script>
+const API = '';
+
+// --- Tabs ---
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab === 'voice') loadVoiceProfile();
+    if (tab.dataset.tab === 'commands') { loadCapabilities(); loadMappings(); }
+  });
+});
+
+function showStatus(id, message, isError) {
+  const el = document.getElementById(id);
+  el.textContent = message;
+  el.className = 'status ' + (isError ? 'error' : 'success');
+}
+
+// --- Part 1: Identity ---
+async function loadIdentity() {
+  const res = await fetch(API + '/api/identity');
+  const data = await res.json();
+  if (data.assistantName) document.getElementById('assistantName').value = data.assistantName;
+  if (data.wakePhrase) document.getElementById('wakePhrase').value = data.wakePhrase;
+}
+async function saveIdentity() {
+  const assistantName = document.getElementById('assistantName').value;
+  const wakePhrase = document.getElementById('wakePhrase').value;
+  const res = await fetch(API + '/api/identity', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ assistantName, wakePhrase })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    showStatus('identity-status', `Saved! Your assistant is now "${data.assistantName}", wake phrase "${data.wakePhrase}".`, false);
+  } else {
+    showStatus('identity-status', 'Error: ' + (data.details ? data.details.join(' ') : data.error), true);
+  }
+}
+
+// --- Part 2: Voice Profile ---
+async function loadVoiceProfile() {
+  const res = await fetch(API + '/api/voice-profile');
+  const profile = await res.json();
+  const pct = Math.round((profile.samplesRecorded / profile.samplesRequired) * 100);
+  document.getElementById('voice-progress-label').textContent =
+    `Voice training: ${profile.samplesRecorded}/${profile.samplesRequired} phrases recorded (${profile.status})`;
+  document.getElementById('voice-progress-fill').style.width = pct + '%';
+
+  const container = document.getElementById('voice-phrases');
+  container.innerHTML = '';
+  profile.trainingPhrases.forEach((phrase, i) => {
+    const sampleId = 'sample-' + (i + 1);
+    const recorded = profile.recordedSampleIds.includes(sampleId);
+    const div = document.createElement('div');
+    div.className = 'phrase-item' + (recorded ? ' recorded' : '');
+    div.innerHTML = `<span>"${phrase}"</span>` +
+      (recorded ? '<span class="badge free">Recorded</span>' : `<button onclick="recordSample('${sampleId}')">Record (simulated)</button>`);
+    container.appendChild(div);
+  });
+}
+async function recordSample(sampleId) {
+  await fetch(API + '/api/voice-profile/sample', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ sampleId })
+  });
+  loadVoiceProfile();
+}
+async function resetVoiceProfile() {
+  await fetch(API + '/api/voice-profile/reset', { method: 'POST' });
+  loadVoiceProfile();
+}
+
+// --- Part 3: Command Mapping ---
+let capabilitiesCache = [];
+async function loadCapabilities() {
+  const res = await fetch(API + '/api/commands/capabilities');
+  capabilitiesCache = await res.json();
+  const select = document.getElementById('capabilitySelect');
+  select.innerHTML = capabilitiesCache.map(c => `<option value="${c.id}">${c.label} (${c.tier})</option>`).join('');
+  populateActions();
+}
+function populateActions() {
+  const capId = document.getElementById('capabilitySelect').value;
+  const cap = capabilitiesCache.find(c => c.id === capId);
+  const select = document.getElementById('actionSelect');
+  if (!cap) { select.innerHTML = ''; return; }
+  select.innerHTML = cap.actions.map(a => `<option value="${a.actionId}">${a.actionId} - ${a.description}</option>`).join('');
+}
+async function addMapping() {
+  const triggerPhrase = document.getElementById('triggerPhrase').value;
+  const capabilityId = document.getElementById('capabilitySelect').value;
+  const actionId = document.getElementById('actionSelect').value;
+  const res = await fetch(API + '/api/commands', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ triggerPhrase, capabilityId, actionId })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    showStatus('commands-status', `Added: "${data.triggerPhrase}" -> ${capabilityId}.${actionId}`, false);
+    document.getElementById('triggerPhrase').value = '';
+    loadMappings();
+  } else {
+    showStatus('commands-status', 'Error: ' + data.error, true);
+  }
+}
+async function loadMappings() {
+  const res = await fetch(API + '/api/commands');
+  const mappings = await res.json();
+  const list = document.getElementById('mappings-list');
+  list.innerHTML = mappings.map(m => `
+    <div class="mapping-row">
+      <div>
+        <div class="mapping-phrase">"${m.triggerPhrase}"</div>
+        <div class="mapping-target">${m.capabilityId}.${m.actionId}</div>
+      </div>
+      <button class="small-btn" onclick="removeMapping('${m.id}')">Remove</button>
+    </div>
+  `).join('');
+}
+async function removeMapping(id) {
+  await fetch(API + '/api/commands/' + id, { method: 'DELETE' });
+  loadMappings();
+}
+
+// Init
+loadIdentity();
+</script>
+</body>
+</html>

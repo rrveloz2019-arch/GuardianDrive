@@ -1,6 +1,8 @@
 // app.js - Express app definition, separated from index.js so it can be
 // imported directly by tests without starting a real network listener.
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import identityRouter from './routes/identity.js';
 import voiceProfileRouter from './routes/voiceProfile.js';
 import commandsRouter from './routes/commands.js';
@@ -19,6 +21,10 @@ export function createApp() {
 
   const app = express();
   app.use(express.json());
+
+  // Serve the setup dashboard UI (public/index.html + assets)
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  app.use(express.static(path.join(__dirname, '../public')));
 
   app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'guardiandrive-backend', time: new Date().toISOString() });
