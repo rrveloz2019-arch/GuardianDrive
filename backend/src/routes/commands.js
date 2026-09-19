@@ -29,6 +29,24 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Runs a capability action directly with explicit params - bypasses
+// spoken-phrase matching entirely. Useful for testing/debugging a
+// capability (e.g. email.send with real to/subject/body) before the
+// voice-command NLU layer can parse those fields out of free text.
+router.post('/run', async (req, res) => {
+  const { capabilityId, actionId, params, userTier } = req.body;
+  if (!capabilityId || !actionId) {
+    return res.status(400).json({ error: 'capabilityId and actionId are required' });
+  }
+  try {
+    const result = await runCapabilityAction(capabilityId, actionId, params || {}, { userTier });
+    res.status(200).json({ result });
+  } catch (err) {
+    const status = err.code === 'TIER_REQUIRED' ? 402 : err.code === 'UNKNOWN_CAPABILITY' || err.code === 'UNKNOWN_ACTION' ? 404 : 400;
+    res.status(status).json({ error: err.message, code: err.code });
+  }
+});
+
 // Simulates what happens when the wake word fires and speech-to-text
 // hands over a transcript: resolve which command it matches, then run it.
 router.post('/resolve-and-run', async (req, res) => {
