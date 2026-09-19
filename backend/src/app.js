@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import identityRouter from './routes/identity.js';
 import voiceProfileRouter from './routes/voiceProfile.js';
 import commandsRouter from './routes/commands.js';
+import authRouter from './routes/auth.js';
 import { registerAllCapabilities } from './capabilities/index.js';
 
 let capabilitiesRegistered = false;
@@ -33,6 +34,7 @@ export function createApp() {
   app.use('/api/identity', identityRouter);
   app.use('/api/voice-profile', voiceProfileRouter);
   app.use('/api/commands', commandsRouter);
+  app.use('/auth/google', authRouter);
 
   return app;
 }

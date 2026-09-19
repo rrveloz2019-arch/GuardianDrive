@@ -1,4 +1,5 @@
 // GuardianDrive backend entrypoint
+import 'dotenv/config';
 import { createApp } from './app.js';
 
 const PORT = process.env.PORT || 8788;

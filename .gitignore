@@ -6,3 +6,5 @@ backend/data/*.json
 .env.local
 *.pem
 *.key
+backend/Credentials/
+*.apps.googleusercontent.com.json

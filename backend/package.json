@@ -12,6 +12,7 @@
   "author": "Rafael Veloz",
   "license": "UNLICENSED",
   "dependencies": {
+    "dotenv": "^18.0.1",
     "express": "^4.19.2"
   }
 }
