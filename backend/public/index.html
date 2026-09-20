@@ -101,6 +101,7 @@
     <div class="tab active" data-tab="identity">1. Identity</div>
     <div class="tab" data-tab="voice">2. Voice Training</div>
     <div class="tab" data-tab="commands">3. Command Mapping</div>
+    <div class="tab" data-tab="test">4. Test</div>
   </div>
 
   <!-- PART 1: IDENTITY -->
@@ -143,6 +144,36 @@
     </div>
   </div>
 
+<!-- PART 4: TEST -->
+  <div class="panel" id="panel-test">
+    <div class="card">
+      <div style="font-size:13px; color:var(--muted); margin-bottom:12px;">
+        Calls real Gmail/Calendar APIs using your connected Google account.
+        Read actions are safe to click anytime. Sending an email is real -
+        it actually sends.
+      </div>
+      <div style="margin-bottom:12px;">
+        <span id="google-status-badge" class="badge">Checking connection...</span>
+      </div>
+      <button onclick="runTest('email','read_latest',{})">Read Latest Email</button>
+      <button onclick="runTest('calendar','read_today',{})" style="margin-left:8px;">Read Today's Calendar</button>
+    </div>
+    <div class="card">
+      <label>Send a real test email</label>
+      <label style="margin-top:0;">To</label>
+      <input id="testEmailTo" placeholder="you@example.com" />
+      <label>Subject</label>
+      <input id="testEmailSubject" placeholder="Test from GuardianDrive" value="GuardianDrive test email" />
+      <label>Body</label>
+      <input id="testEmailBody" placeholder="Message text" value="This is a real test email from GuardianDrive." />
+      <button onclick="sendTestEmail()" style="margin-top:14px;">Send Real Email</button>
+    </div>
+    <div class="card">
+      <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">Result</div>
+      <pre id="test-result" style="white-space:pre-wrap; word-break:break-word; font-size:12px; color:var(--text); margin:0;">Nothing run yet.</pre>
+    </div>
+  </div>
+
 <script>
 const API = '';
 
@@ -155,6 +186,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
     if (tab.dataset.tab === 'voice') loadVoiceProfile();
     if (tab.dataset.tab === 'commands') { loadCapabilities(); loadMappings(); }
+    if (tab.dataset.tab === 'test') { checkGoogleStatus(); }
   });
 });
 
@@ -269,6 +301,49 @@ async function loadMappings() {
 async function removeMapping(id) {
   await fetch(API + '/api/commands/' + id, { method: 'DELETE' });
   loadMappings();
+}
+
+// --- Part 4: Test ---
+async function checkGoogleStatus() {
+  const badge = document.getElementById('google-status-badge');
+  try {
+    const res = await fetch(API + '/auth/google/status');
+    const data = await res.json();
+    if (data.connected) {
+      badge.textContent = 'Connected as ' + data.email;
+      badge.className = 'badge free';
+    } else {
+      badge.textContent = 'Not connected - visit /auth/google/login first';
+      badge.className = 'badge error';
+    }
+  } catch (err) {
+    badge.textContent = 'Could not check connection status';
+    badge.className = 'badge error';
+  }
+}
+function showTestResult(data) {
+  document.getElementById('test-result').textContent = JSON.stringify(data, null, 2);
+}
+async function runTest(capabilityId, actionId, params) {
+  showTestResult('Running...');
+  try {
+    const res = await fetch(API + '/api/commands/run', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ capabilityId, actionId, params, userTier: 'paid' })
+    });
+    const data = await res.json();
+    showTestResult(data);
+  } catch (err) {
+    showTestResult({ error: err.message });
+  }
+}
+async function sendTestEmail() {
+  const to = document.getElementById('testEmailTo').value;
+  const subject = document.getElementById('testEmailSubject').value;
+  const body = document.getElementById('testEmailBody').value;
+  if (!to) { showTestResult({ error: 'Enter a "To" address first.' }); return; }
+  if (!confirm('This sends a REAL email to ' + to + '. Continue?')) return;
+  await runTest('email', 'send', { to, subject, body });
 }
 
 // Init

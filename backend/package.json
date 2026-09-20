@@ -1,6 +1,6 @@
 {
   "name": "guardiandrive-backend",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "GuardianDrive - hands-free AI secretary backend (wake-word matching, voice profile, command mapping)",
   "main": "src/index.js",
   "type": "module",

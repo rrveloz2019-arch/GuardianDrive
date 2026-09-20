@@ -6,6 +6,7 @@
 
 import { registerCapability } from './registry.js';
 import { searchCapability } from './search.js';
+import { mapsCapability } from './maps.js';
 import { emailCapability } from './email.js';
 import { calendarCapability } from './calendar.js';
 import { documentsCapability } from './documents.js';
@@ -14,6 +15,7 @@ import { textsCapability } from './texts.js';
 
 export function registerAllCapabilities() {
   registerCapability(searchCapability);
+  registerCapability(mapsCapability);
   registerCapability(emailCapability);
   registerCapability(calendarCapability);
   registerCapability(documentsCapability);
