@@ -6,28 +6,56 @@
 <title>GuardianDrive Setup Dashboard</title>
 <style>
   :root {
-    --bg: #0f1420;
-    --card: #1a2233;
-    --accent: #4f8cff;
-    --accent-dark: #3a6fd6;
-    --text: #e8ecf5;
-    --muted: #8b95ab;
-    --success: #3ecf8e;
-    --error: #ff5c5c;
-    --border: #2a3550;
+    --bg: #eaf1fb;
+    --card: #ffffff;
+    --gold: #c9972e;
+    --gold-dark: #a97a1f;
+    --steel: #4c5a6e;
+    --accent: #c9972e;
+    --accent-dark: #a97a1f;
+    --accent-blue: #3f6fd8;
+    --text: #1a2230;
+    --muted: #64707f;
+    --success: #1e9e64;
+    --error: #d6394a;
+    --border: #d7e2f2;
   }
   * { box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(201,151,46,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 400px at 100% 0%, rgba(63,111,216,0.10), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
     color: var(--text);
     margin: 0;
     padding: 24px;
     max-width: 720px;
     margin-inline: auto;
   }
-  h1 { font-size: 22px; margin-bottom: 4px; }
-  .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 14px; }
+  .brand { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 6px; flex-wrap: wrap; }
+  .phone-icon { flex-shrink: 0; }
+  .brand img { height: 84px; width: 150px; max-width: 40vw; object-fit: cover; border-radius: 10px; box-shadow: 0 2px 10px rgba(20,30,50,0.20); display: block; }
+  h1 {
+    font-size: 22px;
+    margin: 0;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--steel) 55%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 0.3px;
+  }
+  .subtitle {
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: 20px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #1c1c1f 0%, #7a7a82 55%, #1c1c1f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
   .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
   .tab {
     padding: 10px 16px;
@@ -37,7 +65,7 @@
     font-size: 14px;
     font-weight: 500;
   }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab.active { color: var(--gold-dark); border-bottom-color: var(--accent-blue); }
   .panel { display: none; }
   .panel.active { display: block; }
   .card {
@@ -46,46 +74,47 @@
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(20,20,20,0.04);
   }
   label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; margin-top: 14px; }
   label:first-child { margin-top: 0; }
   input, select {
     width: 100%;
     padding: 10px 12px;
-    background: #0f1420;
+    background: #f2f6fc;
     border: 1px solid var(--border);
     border-radius: 6px;
     color: var(--text);
     font-size: 14px;
   }
   button {
-    background: var(--accent);
-    color: white;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: #fffdf8;
     border: none;
     padding: 10px 18px;
     border-radius: 6px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     margin-top: 16px;
   }
-  button:hover { background: var(--accent-dark); }
+  button:hover { background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%); }
   button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
   .status { margin-top: 12px; padding: 10px 12px; border-radius: 6px; font-size: 13px; display: none; }
-  .status.success { display: block; background: rgba(62,207,142,0.12); color: var(--success); border: 1px solid rgba(62,207,142,0.3); }
-  .status.error { display: block; background: rgba(255,92,92,0.12); color: var(--error); border: 1px solid rgba(255,92,92,0.3); }
+  .status.success { display: block; background: rgba(30,158,100,0.10); color: var(--success); border: 1px solid rgba(30,158,100,0.3); }
+  .status.error { display: block; background: rgba(214,57,74,0.10); color: var(--error); border: 1px solid rgba(214,57,74,0.3); }
   .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 10px; }
   .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s; }
   .phrase-item {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 12px; background: #0f1420; border: 1px solid var(--border);
+    padding: 10px 12px; background: #f2f6fc; border: 1px solid var(--border);
     border-radius: 6px; margin-top: 8px; font-size: 13px;
   }
   .phrase-item button { margin: 0; padding: 4px 10px; font-size: 12px; background: transparent; color: var(--muted); border: 1px solid var(--border); }
   .phrase-item.recorded { border-color: var(--success); }
   .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--border); color: var(--muted); }
-  .badge.free { background: rgba(62,207,142,0.15); color: var(--success); }
-  .badge.paid { background: rgba(79,140,255,0.15); color: var(--accent); }
+  .badge.free { background: rgba(30,158,100,0.14); color: var(--success); }
+  .badge.paid { background: rgba(63,111,216,0.14); color: var(--accent-blue); }
   .mapping-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
   .mapping-row:last-child { border-bottom: none; }
   .mapping-phrase { font-weight: 600; }
@@ -94,7 +123,14 @@
 </style>
 </head>
 <body>
-  <h1>GuardianDrive Setup Dashboard</h1>
+  <div class="brand">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <img src="assets/logo.png" alt="GuardianDrive logo" />
+      <h1>GuardianDrive Setup Dashboard</h1>
+    </div>
+    <img class="phone-icon" src="assets/header-photo-v2.png" alt="Hands-free driving with GuardianDrive"
+         style="height:84px; width:150px; max-width:40vw; object-fit:cover; border-radius:10px; box-shadow:0 2px 10px rgba(20,30,50,0.20); display:block;" />
+  </div>
   <div class="subtitle">Personalize your hands-free AI secretary</div>
 
   <div class="tabs">
@@ -157,11 +193,11 @@
       <div class="status" id="voice-support-status"></div>
       <div style="margin-top:14px;">
         <label style="margin-top:0;">Live transcript</label>
-        <div id="voice-transcript" style="min-height:20px; padding:10px 12px; background:#0f1420; border:1px solid var(--border); border-radius:6px; font-size:14px; color:var(--text);">(nothing yet - click Start Listening and speak)</div>
+        <div id="voice-transcript" style="min-height:20px; padding:10px 12px; background:#f2f6fc; border:1px solid var(--border); border-radius:6px; font-size:14px; color:var(--text);">(nothing yet - click Start Listening and speak)</div>
       </div>
       <div style="margin-top:14px;">
         <label style="margin-top:0;">Matched command + result</label>
-        <pre id="voice-result" style="white-space:pre-wrap; word-break:break-word; font-size:12px; color:var(--text); margin:0; padding:10px 12px; background:#0f1420; border:1px solid var(--border); border-radius:6px;">Nothing run yet.</pre>
+        <pre id="voice-result" style="white-space:pre-wrap; word-break:break-word; font-size:12px; color:var(--text); margin:0; padding:10px 12px; background:#f2f6fc; border:1px solid var(--border); border-radius:6px;">Nothing run yet.</pre>
       </div>
     </div>
     <div class="card">
