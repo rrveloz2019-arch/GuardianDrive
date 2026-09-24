@@ -1,31 +1,68 @@
-// calls.js - FREE TIER capability (per your business model: core hands-free
-// calls are free tier)
+// calls.js - FREE TIER capability
 //
-// IMPORTANT ARCHITECTURAL NOTE: this backend CANNOT place a phone call by
-// itself - that requires the device's own telephony stack. Per your notes:
-// iOS uses CallKit, Android uses Telecom/Telephony APIs, and you want
-// each platform's NATIVE API rather than a cross-platform calling service.
+// LAUNCHER, not a dialer: this backend does NOT place phone calls itself
+// and needs no telephony API, CallKit, or Telecom integration. It builds a
+// tel: link; opening that link on your phone (from this dashboard installed
+// as a home-screen app, or from a normal browser tab) hands off to your
+// phone's own native Phone app with the number already entered. You tap
+// Call yourself.
 //
-// So this capability's real job on the backend is just: resolve WHO to
-// call from a spoken name (e.g. "call my wife" -> look up her number in
-// contacts), then hand that phone number back to the mobile app, which
-// invokes CallKit/Telecom locally. The actual dialing action happens in
-// the iOS/Android app, not here.
+// If you say a name instead of a number ("call my wife"), it's resolved
+// against your saved Contacts (see contactsService.js / the Contacts tab)
+// before building the link.
+
+import { resolveContact } from '../services/contactsService.js';
+
+function toTelLink(phone) {
+  const digits = phone.replace(/[^\d+]/g, '');
+  if (!digits) throw new Error('Phone number has no digits after cleanup');
+  return `tel:${digits}`;
+}
 
 export const callsCapability = {
   id: 'calls',
   label: 'Phone Calls',
   tier: 'free',
   actions: {
-    resolve_contact_for_call: {
-      description: 'Resolve a spoken contact name (e.g. "my wife") to a phone number for the mobile app to dial via CallKit/Telecom.',
-      handler: async ({ query }, ctx) => {
-        if (!query) throw new Error('query (spoken contact reference) is required');
-        // TODO: look up ctx.userId's contacts (synced from device or a
-        // contacts API) to resolve "my wife"/a name to an actual number.
+    call: {
+      description: 'Resolve a spoken contact name or phone number and open your phone\'s native dialer with it ready to call.',
+      handler: async ({ query, to }, _ctx) => {
+        // Accept either a direct number (`to`) or a spoken reference
+        // (`query`, e.g. "my wife") to resolve against saved contacts.
+        let phone = to;
+        let resolvedName = null;
+
+        if (!phone && query) {
+          // If the spoken text already looks like a phone number, use it
+          // directly; otherwise try to resolve it as a contact name.
+          const digitCount = (query.match(/\d/g) || []).length;
+          if (digitCount >= 7) {
+            phone = query;
+          } else {
+            const contact = await resolveContact(query);
+            if (!contact) {
+              return {
+                implemented: true,
+                message: `Couldn't find a contact matching "${query}". Add them in the Contacts tab, or say a phone number directly.`,
+                launchUrl: null,
+                requiresUserTap: false,
+              };
+            }
+            phone = contact.phone;
+            resolvedName = contact.name;
+          }
+        }
+
+        if (!phone) throw new Error('query (contact name or phone number) or to (phone number) is required');
+
+        const launchUrl = toTelLink(phone);
         return {
-          implemented: false,
-          message: `Calls capability received contact reference "${query}" - contact lookup not yet connected. The mobile app must call CallKit (iOS) / Telecom API (Android) directly with the resolved number - this backend never dials calls itself.`,
+          implemented: true,
+          message: resolvedName
+            ? `Opening your phone app to call ${resolvedName} (${phone}).`
+            : `Opening your phone app to call ${phone}.`,
+          launchUrl,
+          requiresUserTap: true,
         };
       },
     },

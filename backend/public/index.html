@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GuardianDrive Setup Dashboard</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c9972e">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GuardianDrive">
 <style>
   :root {
     --bg: #eaf1fb;
@@ -139,6 +146,7 @@
     <div class="tab" data-tab="commands">3. Command Mapping</div>
     <div class="tab" data-tab="test">4. Test</div>
     <div class="tab" data-tab="profile">5. Profile</div>
+    <div class="tab" data-tab="contacts">6. Contacts</div>
   </div>
 
   <!-- PART 1: IDENTITY -->
@@ -239,6 +247,29 @@
     </div>
   </div>
 
+  <!-- PART 6: CONTACTS -->
+  <div class="panel" id="panel-contacts">
+    <div class="card">
+      <div style="font-size:13px; color:var(--muted); margin-bottom:12px;">
+        Add contacts so voice commands like "call my wife" or "text John saying
+        I'm on my way" can resolve a name to a real phone number. Aliases are
+        optional extra ways to say the same contact (e.g. "my wife", "the boss").
+      </div>
+      <label>Name</label>
+      <input id="contactName" placeholder="e.g. Maria Lopez" />
+      <label>Aliases (comma-separated, optional)</label>
+      <input id="contactAliases" placeholder="e.g. my wife, mom" />
+      <label>Phone Number</label>
+      <input id="contactPhone" placeholder="e.g. +18135551234" />
+      <button onclick="addContact()">Add Contact</button>
+      <div class="status" id="contacts-status"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">Saved Contacts</div>
+      <div id="contacts-list"></div>
+    </div>
+  </div>
+
 <script>
 const API = '';
 
@@ -253,6 +284,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'commands') { loadCapabilities(); loadMappings(); }
     if (tab.dataset.tab === 'test') { checkGoogleStatus(); }
     if (tab.dataset.tab === 'profile') { loadProfileStatus(); }
+    if (tab.dataset.tab === 'contacts') { loadContacts(); }
   });
 });
 
@@ -519,7 +551,60 @@ async function runVoiceCommand(spokenText) {
   }
 }
 
+// --- Part 6: Contacts ---
+async function loadContacts() {
+  const res = await fetch(API + '/api/contacts');
+  const contacts = await res.json();
+  const list = document.getElementById('contacts-list');
+  if (!contacts.length) {
+    list.innerHTML = '<div style="color:var(--muted); font-size:13px;">No contacts yet - add one above.</div>';
+    return;
+  }
+  list.innerHTML = contacts.map(c => `
+    <div class="mapping-row">
+      <div>
+        <div class="mapping-phrase">${c.name}</div>
+        <div class="mapping-target">${c.phone}${c.aliases && c.aliases.length ? ' - aka: ' + c.aliases.join(', ') : ''}</div>
+      </div>
+      <button class="small-btn" onclick="removeContact('${c.id}')">Remove</button>
+    </div>
+  `).join('');
+}
+async function addContact() {
+  const name = document.getElementById('contactName').value.trim();
+  const phone = document.getElementById('contactPhone').value.trim();
+  const aliasesRaw = document.getElementById('contactAliases').value.trim();
+  const aliases = aliasesRaw ? aliasesRaw.split(',').map(a => a.trim()).filter(Boolean) : [];
+  if (!name || !phone) { showStatus('contacts-status', 'Name and phone number are both required.', true); return; }
+  const res = await fetch(API + '/api/contacts', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ name, phone, aliases })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    showStatus('contacts-status', `Added ${data.name}.`, false);
+    document.getElementById('contactName').value = '';
+    document.getElementById('contactAliases').value = '';
+    document.getElementById('contactPhone').value = '';
+    loadContacts();
+  } else {
+    showStatus('contacts-status', 'Error: ' + data.error, true);
+  }
+}
+async function removeContact(id) {
+  await fetch(API + '/api/contacts/' + id, { method: 'DELETE' });
+  loadContacts();
+}
+
 initVoice();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js').catch((err) => {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
 
 // Init
 loadIdentity();

@@ -1,0 +1,36 @@
+{
+  "name": "GuardianDrive",
+  "short_name": "GuardianDrive",
+  "description": "Your voice. Your command. Hands-free AI secretary for driving.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eaf1fb",
+  "theme_color": "#c9972e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

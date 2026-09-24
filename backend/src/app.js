@@ -9,6 +9,7 @@ import commandsRouter from './routes/commands.js';
 import authRouter from './routes/auth.js';
 import microsoftAuthRouter from './routes/microsoftAuth.js';
 import profileRouter from './routes/profile.js';
+import contactsRouter from './routes/contacts.js';
 import { registerAllCapabilities } from './capabilities/index.js';
 
 let capabilitiesRegistered = false;
@@ -39,6 +40,7 @@ export function createApp() {
   app.use('/auth/google', authRouter);
   app.use('/auth/microsoft', microsoftAuthRouter);
   app.use('/api/profile', profileRouter);
+  app.use('/api/contacts', contactsRouter);
 
   return app;
 }
