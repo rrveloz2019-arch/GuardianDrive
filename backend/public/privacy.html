@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy - GuardianDrive</title>
+<link rel="icon" href="assets/icon-192.png">
+<style>
+  :root {
+    --bg: #eaf1fb;
+    --card: #ffffff;
+    --gold: #c9972e;
+    --gold-dark: #a97a1f;
+    --steel: #4c5a6e;
+    --text: #1a2230;
+    --muted: #64707f;
+    --border: #d7e2f2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px 36px;
+    box-shadow: 0 2px 14px rgba(20,30,50,0.06);
+  }
+  a { color: var(--gold-dark); }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .updated { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+  h2 { font-size: 18px; margin-top: 32px; margin-bottom: 8px; color: var(--steel); }
+  p, li { color: var(--text); font-size: 15px; }
+  ul { padding-left: 22px; }
+  .backlink { display: inline-block; margin-bottom: 18px; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="/">&larr; Back to GuardianDrive Dashboard</a>
+  <div class="card">
+    <h1>GuardianDrive Privacy Policy</h1>
+    <div class="updated">Last updated: September 24, 2026</div>
+
+    <p>GuardianDrive is a hands-free voice assistant that helps you make calls, send texts, and manage email and
+    calendar while driving. This page explains exactly what information GuardianDrive accesses, why, and how it's
+    handled &mdash; in plain language, matching what the app actually does.</p>
+
+    <h2>What GuardianDrive accesses, and why</h2>
+    <table>
+      <tr><th>Data</th><th>Why</th><th>Where it's stored</th></tr>
+      <tr>
+        <td>Google account: email, basic profile, Gmail (read &amp; send), Calendar (read &amp; write)</td>
+        <td>Powers "read my email," "what's on my calendar," and similar voice commands</td>
+        <td>Access is via a secure Google sign-in token stored on GuardianDrive's server. GuardianDrive does not
+        store copies of your emails or calendar events &mdash; it fetches them live from Google when you ask.</td>
+      </tr>
+      <tr>
+        <td>Microsoft/Outlook account (optional): email, basic profile, Mail (read &amp; send)</td>
+        <td>Only if you choose to connect a secondary Outlook email address</td>
+        <td>Same as above &mdash; a secure sign-in token on GuardianDrive's server, live fetch, no stored copies</td>
+      </tr>
+      <tr>
+        <td>Phone number and message text (SMS feature only)</td>
+        <td>Sent to Twilio's API to deliver a real text message you asked GuardianDrive to send from your
+        GuardianDrive number</td>
+        <td>Passed through to Twilio to send; not stored by GuardianDrive afterward</td>
+      </tr>
+      <tr>
+        <td>Contacts you save in the app (name, optional alias, phone number)</td>
+        <td>So a spoken command like "call my wife" can resolve to a real number</td>
+        <td>Stored on GuardianDrive's server. Not synced from your phone's contacts, not shared with anyone</td>
+      </tr>
+      <tr>
+        <td>Assistant name and wake phrase you choose</td>
+        <td>Personalizes how you address your assistant</td>
+        <td>Stored on GuardianDrive's server</td>
+      </tr>
+      <tr>
+        <td>Voice command mapping preferences</td>
+        <td>Which spoken phrases trigger which actions</td>
+        <td>Stored on GuardianDrive's server, as text only</td>
+      </tr>
+      <tr>
+        <td>Voice training progress</td>
+        <td>Tracks how many of the training phrases you've completed</td>
+        <td>Stored as a count and status only. GuardianDrive does <strong>not</strong> currently record or store
+        actual audio of your voice. If real voice-recognition training is added in the future, this policy will be
+        updated before any audio is ever captured.</td>
+      </tr>
+    </table>
+
+    <h2>What GuardianDrive does <em>not</em> do</h2>
+    <ul>
+      <li>Does not sell your data to anyone, for any reason</li>
+      <li>Does not use your data for advertising or ad targeting</li>
+      <li>Does not track your behavior for analytics beyond what's needed to run the app</li>
+      <li>Does not see or store the content of calls, texts, WhatsApp messages, or social posts you send through
+      your <strong>phone's own</strong> Phone/Messages/WhatsApp apps &mdash; GuardianDrive only prepares the link
+      (who to contact, what to say) and your phone's own app handles the rest</li>
+    </ul>
+
+    <h2>Third-party services involved</h2>
+    <p>Because GuardianDrive connects to your Google, Microsoft, and (for SMS) Twilio accounts on your behalf, each
+    of those providers' own privacy policies also applies to how they handle the data GuardianDrive is authorized to
+    access:</p>
+    <ul>
+      <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a></li>
+      <li><a href="https://privacy.microsoft.com/en-us/privacystatement" target="_blank" rel="noopener">Microsoft Privacy Statement</a></li>
+      <li><a href="https://www.twilio.com/en-us/legal/privacy" target="_blank" rel="noopener">Twilio Privacy Policy</a></li>
+    </ul>
+
+    <h2>Your control over your data</h2>
+    <ul>
+      <li>You can disconnect your Google or Microsoft account at any time from your Google/Microsoft account
+      security settings, which immediately revokes GuardianDrive's access.</li>
+      <li>You can delete any saved contact directly from the Contacts tab in the dashboard.</li>
+      <li>To request deletion of any other data GuardianDrive holds about you, contact us using the email below.</li>
+    </ul>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy or your data: <a href="mailto:rrveloz2019@gmail.com">rrveloz2019@gmail.com</a></p>
+  </div>
+</div>
+</body>
+</html>
