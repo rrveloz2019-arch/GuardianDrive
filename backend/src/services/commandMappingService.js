@@ -27,6 +27,11 @@ const DEFAULT_MAPPINGS = [
   { id: 'default-whatsapp-send', triggerPhrase: 'send a whatsapp to', capabilityId: 'whatsapp', actionId: 'send' },
   { id: 'default-sms-send', triggerPhrase: 'send an sms to', capabilityId: 'sms', actionId: 'send' },
   { id: 'default-secondary-email-send', triggerPhrase: 'send an outlook email to', capabilityId: 'secondaryEmail', actionId: 'send' },
+  { id: 'default-post-x', triggerPhrase: 'post on x', capabilityId: 'socialMedia', actionId: 'post_x' },
+  { id: 'default-post-x-twitter', triggerPhrase: 'post on twitter', capabilityId: 'socialMedia', actionId: 'post_x' },
+  { id: 'default-post-linkedin', triggerPhrase: 'post on linkedin', capabilityId: 'socialMedia', actionId: 'post_linkedin' },
+  { id: 'default-post-facebook', triggerPhrase: 'post on facebook', capabilityId: 'socialMedia', actionId: 'post_facebook' },
+  { id: 'default-open-instagram', triggerPhrase: 'open instagram', capabilityId: 'socialMedia', actionId: 'open_instagram' },
 ];
 
 async function readMappings() {

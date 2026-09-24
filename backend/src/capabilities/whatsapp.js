@@ -1,57 +1,42 @@
 // whatsapp.js - PAID TIER capability
-// Real WhatsApp sending via the Twilio Messages API.
 //
-// IMPORTANT - Sandbox limitation: until you complete Twilio's WhatsApp
-// Sandbox "join" step (texting the join code shown in Twilio Console >
-// Messaging > Try it out > Send a WhatsApp message, from your own phone,
-// to the Sandbox number), Twilio will REJECT messages to any recipient
-// number that hasn't joined the sandbox. That is a Twilio/WhatsApp
-// platform rule, not a bug in this code - it applies to every Twilio
-// account until you get a production WhatsApp sender approved.
+// LAUNCHER, not a sender: this backend does NOT send WhatsApp messages
+// itself and does NOT need Twilio, a WhatsApp Business API, or any
+// credentials. It only builds a wa.me link with the recipient and your
+// message pre-filled. Opening that link launches WhatsApp Web/Desktop/
+// Mobile - already signed in to YOUR OWN WhatsApp account on your phone -
+// with the chat open and the message typed in. You tap Send yourself.
 //
-// Requires in .env: TWILIO_ACCOUNT_SID, TWILIO_API_KEY_SID,
-// TWILIO_API_KEY_SECRET
-// Optional in .env: TWILIO_WHATSAPP_NUMBER (your own approved WhatsApp
-// sender, once you have one). If not set, this falls back to Twilio's
-// public Sandbox number (+14155238886) automatically.
+// This is a deliberate architecture choice (per your instruction): the
+// phone's own logged-in accounts handle everything past this point, so
+// there is nothing to configure, connect, or authorize here.
 
-import { sendTwilioMessage, twilioConfigured } from '../services/twilioService.js';
+function toWaMeLink(to, body) {
+  if (!to) throw new Error('Recipient ("to") is required');
+  // wa.me needs country code + number, digits only (no +, spaces, dashes,
+  // parentheses).
+  const digits = to.replace(/[^\d]/g, '');
+  if (!digits) throw new Error('Recipient phone number has no digits after cleanup');
 
-const SANDBOX_NUMBER = '+14155238886'; // Twilio's public WhatsApp Sandbox number
-
-function toWhatsApp(number) {
-  if (!number) return number;
-  return number.startsWith('whatsapp:') ? number : `whatsapp:${number}`;
+  const url = new URL(`https://wa.me/${digits}`);
+  if (body) url.searchParams.set('text', body);
+  return url.toString();
 }
 
 export const whatsappCapability = {
   id: 'whatsapp',
-  label: 'WhatsApp (Twilio)',
+  label: 'WhatsApp',
   tier: 'paid',
   actions: {
     send: {
-      description: 'Send a WhatsApp message via Twilio.',
+      description: 'Open WhatsApp with a message pre-filled to a contact, ready for you to tap Send.',
       handler: async ({ to, body }, _ctx) => {
-        if (!twilioConfigured()) {
-          return {
-            implemented: false,
-            message: 'WhatsApp is not set up yet - add TWILIO_ACCOUNT_SID, TWILIO_API_KEY_SID and TWILIO_API_KEY_SECRET to .env first.',
-          };
-        }
-        if (!to) throw new Error('Recipient ("to") is required');
-        if (!body) throw new Error('Message body is required');
-
-        const usingSandbox = !process.env.TWILIO_WHATSAPP_NUMBER;
-        const from = toWhatsApp(process.env.TWILIO_WHATSAPP_NUMBER || SANDBOX_NUMBER);
-
-        const result = await sendTwilioMessage({ to: toWhatsApp(to), from, body });
-
+        const launchUrl = toWaMeLink(to, body);
         return {
           implemented: true,
-          message: `WhatsApp message sent to ${to}.${usingSandbox ? ' (sent via Twilio Sandbox - the recipient must have joined the sandbox first, or this will fail)' : ''}`,
-          twilioSid: result.sid,
-          status: result.status,
-          usingSandbox,
+          message: `Opening WhatsApp to message ${to} - review and tap Send.`,
+          launchUrl,
+          requiresUserTap: true,
         };
       },
     },

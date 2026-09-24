@@ -30,12 +30,11 @@ router.get('/status', async (req, res) => {
       note: 'Google Maps Platform API key in .env (Geocoding + Directions)',
     },
     whatsapp: {
-      configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_API_KEY_SID && process.env.TWILIO_API_KEY_SECRET),
-      // Real, already-verified fact (via Twilio CLI), but not yet wired into
-      // this backend - stated plainly rather than shown as "connected".
-      note: process.env.TWILIO_ACCOUNT_SID
-        ? 'Twilio credentials found in .env.'
-        : 'Not set up yet. Your Twilio account is verified (number +1 866-902-1023 confirmed via CLI), but no credentials are in .env yet and no WhatsApp/SMS capability is built into the app yet.',
+      // Launcher, not a Twilio send - no credentials needed at all. Opens
+      // wa.me with your message pre-filled, using the WhatsApp account
+      // already signed in on your phone/browser.
+      configured: true,
+      note: 'No setup needed - opens WhatsApp with your message pre-filled using your own signed-in account.',
     },
     sms: {
       configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_PHONE_NUMBER),
@@ -53,6 +52,14 @@ router.get('/status', async (req, res) => {
       note: !!(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET && process.env.MICROSOFT_REDIRECT_URI)
         ? (microsoftRecord ? undefined : 'Azure app credentials are in .env - visit /auth/microsoft/login to connect an Outlook account.')
         : 'Not set up yet. Add MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET and MICROSOFT_REDIRECT_URI to .env first (Azure App Registration).',
+    },
+    socialMedia: {
+      // Launcher for X/LinkedIn/Facebook/Instagram - no credentials or API
+      // keys needed. See socialMedia.js for per-platform pre-fill limits
+      // (X fully supported; LinkedIn/Facebook link-only; Instagram cannot
+      // pre-fill at all - these are the platforms' own restrictions).
+      configured: true,
+      note: 'No setup needed - opens each platform using your own signed-in account. X fully pre-fills; LinkedIn/Facebook pre-fill only when sharing a link; Instagram cannot pre-fill at all (platform limitation).',
     },
   });
 });
