@@ -1,0 +1,18 @@
+# Never upload dependencies - Cloud Run's build process installs these
+# fresh from package.json. Uploading node_modules from a Windows machine
+# also crashes gcloud (WinError 1920 on node_modules/.bin reparse points).
+node_modules/
+
+# Never upload secrets or local data
+.env
+.env.local
+*.pem
+*.key
+data/*.json
+Credentials/
+*.apps.googleusercontent.com.json
+
+.git/
+.gitignore
+*.log
+.DS_Store
