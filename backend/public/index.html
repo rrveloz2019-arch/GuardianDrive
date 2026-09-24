@@ -102,6 +102,7 @@
     <div class="tab" data-tab="voice">2. Voice Training</div>
     <div class="tab" data-tab="commands">3. Command Mapping</div>
     <div class="tab" data-tab="test">4. Test</div>
+    <div class="tab" data-tab="profile">5. Profile</div>
   </div>
 
   <!-- PART 1: IDENTITY -->
@@ -146,6 +147,23 @@
 
 <!-- PART 4: TEST -->
   <div class="panel" id="panel-test">
+    <div class="card" id="voice-card">
+      <div style="font-size:13px; color:var(--muted); margin-bottom:12px;">
+        Speak a command out loud. Your browser turns it into text, then GuardianDrive
+        matches it against your Command Mapping list and runs the real action.
+        Chrome/Edge desktop recommended (uses the Web Speech API).
+      </div>
+      <button id="mic-btn" onclick="toggleVoiceListening()">&#127908; Start Listening</button>
+      <div class="status" id="voice-support-status"></div>
+      <div style="margin-top:14px;">
+        <label style="margin-top:0;">Live transcript</label>
+        <div id="voice-transcript" style="min-height:20px; padding:10px 12px; background:#0f1420; border:1px solid var(--border); border-radius:6px; font-size:14px; color:var(--text);">(nothing yet - click Start Listening and speak)</div>
+      </div>
+      <div style="margin-top:14px;">
+        <label style="margin-top:0;">Matched command + result</label>
+        <pre id="voice-result" style="white-space:pre-wrap; word-break:break-word; font-size:12px; color:var(--text); margin:0; padding:10px 12px; background:#0f1420; border:1px solid var(--border); border-radius:6px;">Nothing run yet.</pre>
+      </div>
+    </div>
     <div class="card">
       <div style="font-size:13px; color:var(--muted); margin-bottom:12px;">
         Calls real Gmail/Calendar APIs using your connected Google account.
@@ -174,6 +192,17 @@
     </div>
   </div>
 
+  <!-- PART 5: PROFILE -->
+  <div class="panel" id="panel-profile">
+    <div class="card">
+      <div style="font-size:13px; color:var(--muted); margin-bottom:12px;">
+        One place to see what's actually connected. Nothing here is a toggle -
+        it's a live read of your real .env / connected-account state.
+      </div>
+      <div id="profile-status">Loading...</div>
+    </div>
+  </div>
+
 <script>
 const API = '';
 
@@ -187,6 +216,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'voice') loadVoiceProfile();
     if (tab.dataset.tab === 'commands') { loadCapabilities(); loadMappings(); }
     if (tab.dataset.tab === 'test') { checkGoogleStatus(); }
+    if (tab.dataset.tab === 'profile') { loadProfileStatus(); }
   });
 });
 
@@ -345,6 +375,115 @@ async function sendTestEmail() {
   if (!confirm('This sends a REAL email to ' + to + '. Continue?')) return;
   await runTest('email', 'send', { to, subject, body });
 }
+
+// --- Part 5: Profile (consolidated status) ---
+function statusRow(label, ok, detail) {
+  const badgeClass = ok ? 'badge free' : 'badge error';
+  const badgeText = ok ? 'Connected' : 'Not set up';
+  return `
+    <div class="mapping-row">
+      <div>
+        <div class="mapping-phrase">${label}</div>
+        <div class="mapping-target">${detail}</div>
+      </div>
+      <span class="${badgeClass}">${badgeText}</span>
+    </div>`;
+}
+async function loadProfileStatus() {
+  const container = document.getElementById('profile-status');
+  container.innerHTML = 'Loading...';
+  try {
+    const res = await fetch(API + '/api/profile/status');
+    const s = await res.json();
+    let html = '';
+    html += statusRow(
+      'Email &amp; Calendar (Google)',
+      s.email.connected,
+      s.email.connected ? ('Signed in as ' + s.email.account) : ('Not connected - <a href="' + s.email.connectUrl + '" style="color:var(--accent);">connect now</a>')
+    );
+    html += statusRow('Search', s.search.configured, s.search.note);
+    html += statusRow('Maps &amp; Navigation', s.maps.configured, s.maps.note);
+    html += statusRow('WhatsApp', s.whatsapp.configured, s.whatsapp.note);
+    html += statusRow('SMS / Phone Number', s.sms.configured, s.sms.note);
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = '<div class="status error" style="display:block;">Could not load status: ' + err.message + '</div>';
+  }
+}
+
+// --- Voice Command (Web Speech API -> /api/commands/resolve-and-run) ---
+let recognition = null;
+let isListening = false;
+
+function getSpeechRecognition() {
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+
+function initVoice() {
+  const SR = getSpeechRecognition();
+  const supportEl = document.getElementById('voice-support-status');
+  if (!SR) {
+    supportEl.textContent = 'Your browser does not support the Web Speech API. Try Chrome or Edge on desktop.';
+    supportEl.className = 'status error';
+    document.getElementById('mic-btn').disabled = true;
+    return;
+  }
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  recognition.onresult = (event) => {
+    let transcript = '';
+    for (let i = 0; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+    document.getElementById('voice-transcript').textContent = transcript;
+    if (event.results[event.results.length - 1].isFinal) {
+      runVoiceCommand(transcript);
+    }
+  };
+  recognition.onerror = (event) => {
+    showStatus('voice-support-status', 'Mic error: ' + event.error, true);
+    setListening(false);
+  };
+  recognition.onend = () => setListening(false);
+}
+
+function setListening(listening) {
+  isListening = listening;
+  const btn = document.getElementById('mic-btn');
+  btn.textContent = listening ? '\u23F9 Stop Listening' : '\uD83C\uDFA4 Start Listening';
+}
+
+function toggleVoiceListening() {
+  if (!recognition) return;
+  if (isListening) {
+    recognition.stop();
+    setListening(false);
+  } else {
+    document.getElementById('voice-transcript').textContent = '(listening...)';
+    recognition.start();
+    setListening(true);
+  }
+}
+
+async function runVoiceCommand(spokenText) {
+  const resultEl = document.getElementById('voice-result');
+  resultEl.textContent = 'Matching "' + spokenText + '" ...';
+  try {
+    const res = await fetch(API + '/api/commands/resolve-and-run', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ spokenText, userTier: 'paid' })
+    });
+    const data = await res.json();
+    resultEl.textContent = JSON.stringify(data, null, 2);
+  } catch (err) {
+    resultEl.textContent = JSON.stringify({ error: err.message }, null, 2);
+  }
+}
+
+initVoice();
 
 // Init
 loadIdentity();

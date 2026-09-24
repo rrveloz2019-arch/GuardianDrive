@@ -1,4 +1,4 @@
-// email.js - PAID TIER capability
+// email.js - FREE TIER capability (per updated business model: primary email is free)
 // Real Gmail API integration using the OAuth token stored by
 // googleAuthService.js (see /auth/google/login to connect an account).
 
@@ -40,7 +40,7 @@ function extractBody(payload) {
 export const emailCapability = {
   id: 'email',
   label: 'Email',
-  tier: 'paid',
+  tier: 'free',
   actions: {
     read_latest: {
       description: 'Read the most recent email aloud.',

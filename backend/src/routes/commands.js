@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { listMappings, addMapping, removeMapping, resolveCommand } from '../services/commandMappingService.js';
 import { listCapabilities, runCapabilityAction } from '../capabilities/registry.js';
+import { parseDirectionsPhrase } from '../capabilities/maps.js';
 
 const router = Router();
 
@@ -58,11 +59,49 @@ router.post('/resolve-and-run', async (req, res) => {
     return res.status(404).json({ error: 'No command matched that phrase', spokenText });
   }
 
+  // Some actions need more than one free-text "query" param, so build
+  // params per-action instead of always sending { query: remainder }.
+
+  // Sending anything (email, texts) should never fire silently off a
+  // voice match - a misheard phrase could send the wrong message to the
+  // wrong person. Voice can get you to the confirmation screen; it
+  // cannot skip it.
+  if (match.actionId === 'send') {
+    return res.status(200).json({
+      matchedCommand: match,
+      result: {
+        implemented: true,
+        requiresConfirmation: true,
+        message: `I heard "${spokenText}" - matched to ${match.capabilityId}.send, but sending always needs your confirmation first. Please review and send it from the app.`,
+      },
+    });
+  }
+
+  let params;
+  if (match.capabilityId === 'maps' && match.actionId === 'directions') {
+    const { origin, destination } = parseDirectionsPhrase(match.remainder);
+    if (!destination) {
+      return res.status(400).json({
+        matchedCommand: match,
+        error: 'Could not find a destination in that phrase. Try "directions from home to the airport".',
+      });
+    }
+    if (!origin) {
+      return res.status(400).json({
+        matchedCommand: match,
+        error: `I heard the destination ("${destination}") but not a starting point. Try "directions from home to ${destination}".`,
+      });
+    }
+    params = { origin, destination };
+  } else {
+    params = { query: match.remainder };
+  }
+
   try {
     const result = await runCapabilityAction(
       match.capabilityId,
       match.actionId,
-      { query: match.remainder },
+      params,
       { userTier }
     );
     res.status(200).json({ matchedCommand: match, result });

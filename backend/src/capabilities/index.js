@@ -12,6 +12,9 @@ import { calendarCapability } from './calendar.js';
 import { documentsCapability } from './documents.js';
 import { callsCapability } from './calls.js';
 import { textsCapability } from './texts.js';
+import { smsCapability } from './sms.js';
+import { whatsappCapability } from './whatsapp.js';
+import { secondaryEmailCapability } from './secondaryEmail.js';
 
 export function registerAllCapabilities() {
   registerCapability(searchCapability);
@@ -21,4 +24,7 @@ export function registerAllCapabilities() {
   registerCapability(documentsCapability);
   registerCapability(callsCapability);
   registerCapability(textsCapability);
+  registerCapability(smsCapability);
+  registerCapability(whatsappCapability);
+  registerCapability(secondaryEmailCapability);
 }

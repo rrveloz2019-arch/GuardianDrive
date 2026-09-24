@@ -17,6 +17,23 @@
 const GEOCODE_API = 'https://maps.googleapis.com/maps/api/geocode/json';
 const DIRECTIONS_API = 'https://maps.googleapis.com/maps/api/directions/json';
 
+// Parses a free-spoken directions phrase into { origin, destination }.
+// Supports "from A to B", "to B from A", and plain "A to B". If no origin
+// can be found (e.g. just "to B"), origin is null and the caller must ask
+// the speaker for a starting point rather than guessing one.
+export function parseDirectionsPhrase(text) {
+  const t = (text || '').trim();
+  let m = t.match(/^from\s+(.+?)\s+to\s+(.+)$/i);
+  if (m) return { origin: m[1].trim(), destination: m[2].trim() };
+  m = t.match(/^to\s+(.+?)\s+from\s+(.+)$/i);
+  if (m) return { origin: m[2].trim(), destination: m[1].trim() };
+  m = t.match(/^(.+?)\s+to\s+(.+)$/i);
+  if (m) return { origin: m[1].trim(), destination: m[2].trim() };
+  m = t.match(/^to\s+(.+)$/i);
+  if (m) return { origin: null, destination: m[1].trim() };
+  return { origin: null, destination: t || null };
+}
+
 function getApiKey() {
   return process.env.GOOGLE_MAPS_API_KEY;
 }

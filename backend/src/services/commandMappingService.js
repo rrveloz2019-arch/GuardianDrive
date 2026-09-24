@@ -22,6 +22,11 @@ const DEFAULT_MAPPINGS = [
   { id: 'default-documents-read', triggerPhrase: 'read my last document', capabilityId: 'documents', actionId: 'read_latest' },
   { id: 'default-calls-resolve', triggerPhrase: 'call', capabilityId: 'calls', actionId: 'resolve_contact_for_call' },
   { id: 'default-texts-compose', triggerPhrase: 'send a text to', capabilityId: 'texts', actionId: 'compose' },
+  { id: 'default-maps-locate', triggerPhrase: 'where is', capabilityId: 'maps', actionId: 'locate' },
+  { id: 'default-maps-directions', triggerPhrase: 'directions', capabilityId: 'maps', actionId: 'directions' },
+  { id: 'default-whatsapp-send', triggerPhrase: 'send a whatsapp to', capabilityId: 'whatsapp', actionId: 'send' },
+  { id: 'default-sms-send', triggerPhrase: 'send an sms to', capabilityId: 'sms', actionId: 'send' },
+  { id: 'default-secondary-email-send', triggerPhrase: 'send an outlook email to', capabilityId: 'secondaryEmail', actionId: 'send' },
 ];
 
 async function readMappings() {
